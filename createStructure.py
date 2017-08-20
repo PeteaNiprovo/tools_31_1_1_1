@@ -1,14 +1,11 @@
+#https://stackoverflow.com/questions/1198777/double-iteration-in-list-comprehension
 #https://stackoverflow.com/questions/19560044/how-to-concatenate-element-wise-two-lists-in-python
 #https://stackoverflow.com/questions/4406389/if-else-in-a-list-comprehension
 from functools import lru_cache
 import os 
-exampleOfInput = {
-	"startyear":2015, "endyear":2017,
-    "startqtr":1,
-    "endqtr":4,
-    "groupBY":"industry",
-    "IND_CODE":4
-}
+import asyncio
+
+
 '''
 1) 2015/1/industry/
 2) 2015/2/industry/
@@ -24,7 +21,8 @@ example of real url
 class Structure:
     CHACHES_DIR = 'CHACHES/'
     def __init__(self,**kwargs):
-        self.listOfDirs = []
+        self.listOfDirs = [] #save privious one
+        self.privious = []
         self.kwargs = kwargs
     
     @lru_cache(maxsize=256)
@@ -35,26 +33,28 @@ class Structure:
             os.makedirs(cwd)
     
     def _yearsTable(self):
-        if 'endyear' in exampleOfInput:
-            return [year for year in range(exampleOfInput['startyear'], exampleOfInput['endyear']+1)]
+        if 'endyear' in self.kwargs:
+            return [year for year in range(self.kwargs['startyear'], self.kwargs['endyear']+1)]
         else:
-            return [year for year in range(exampleOfInput['startyear'], exampleOfInput['startyear']+1)]
+            return [year for year in range(self.kwargs['startyear'], self.kwargs['startyear']+1)]
         raise BrokenPipeError("You found unhandle case")
     
     def _qatarsTable(self):
-        if 'endqtr' in exampleOfInput:
-            return ["{}/{}".format(q_, exampleOfInput['groupBY']) for q_ in range(1,exampleOfInput['endqtr'])]
+        if 'endqtr' in self.kwargs:
+            #l = [self.kwargs['groupBY']] * self.kwargs['endqtr']
+            #return ["{}/{}".format(qt_,ind_) for qt_, ind_ in enumerate(l, start = 1)] 
+            return ["{}/{}".format(q_, self.kwargs['groupBY']) for q_ in range(1,self.kwargs['endqtr']+1)]
         else:
-            return ["{}/{}".format(q_, exampleOfInput['groupBY']) for q_ in range(1,2)]
+            print("warning endqtr are't present")
+            return ["{}/{}".format(q_, self.kwargs['groupBY']) for q_ in range(1,2)]
         raise BrokenPipeError("You found unhandle case")
-    
-    
+    #there is a clever way to do that like enumerate with 
     def createStructure(self):
         years = self._yearsTable()
+        print('years = ', years)
         qartals = self._qatarsTable()
-        dirs = ["{}/{}".format(a_,b_) for a_,b_ in zip(years, qartals)]
-        return [self.createPath(x) for x in dirs]
-    
-s = Structure(**exampleOfInput)
-output = s.createStructure()
- 
+        print('qartals = ',qartals)
+        #self.listOfDirs = ["{}/{}".format(a_,b_) for a_,b_ in zip(years, qartals)]
+        self.listOfDirs = ["{}/{}".format(year, qartal) for year in years for qartal in qartals]
+        return [self.createPath(x) for x in self.listOfDirs]
+
