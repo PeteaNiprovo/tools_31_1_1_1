@@ -51,9 +51,9 @@ class Structure:
     #there is a clever way to do that like enumerate with 
     def createStructure(self):
         years = self._yearsTable()
-        print('years = ', years)
         qartals = self._qatarsTable()
-        print('qartals = ',qartals)
+        #print('years = ', years)
+        #print('qartals = ',qartals)
         #self.listOfDirs = ["{}/{}".format(a_,b_) for a_,b_ in zip(years, qartals)]
         self.listOfDirs = ["{}/{}".format(year, qartal) for year in years for qartal in qartals]
         return [self.createPath(x) for x in self.listOfDirs]
